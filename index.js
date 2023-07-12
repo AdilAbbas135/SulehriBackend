@@ -20,3 +20,4 @@ app.use("/account", require("./Routes/account"));
 app.use("/api/admin", require("./Routes/admin"));
 app.use("/api/offerings", require("./Routes/offering"));
 app.use("/api/find", require("./Routes/find"));
+app.use("/sendmail", require("./Routes/SendMail"));

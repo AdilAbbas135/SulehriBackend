@@ -5,6 +5,7 @@ const ReplySchema = new Schema(
     DiscussionId: { type: mongoose.Types.ObjectId, required: true },
     Answer: { type: "string", required: true },
     profileId: { type: mongoose.Types.ObjectId, required: true },
+    Votes: { type: [Object] },
   },
   { timestamps: true }
 );

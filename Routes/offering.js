@@ -6,6 +6,7 @@ const OfferingModel = require("../Model/Offering");
 const VerifyToken = require("../Middlewear/VerifyToken");
 const DiscussionReplyModel = require("../Model/Replies");
 const VotesModel = require("../Model/Votes");
+const { Console } = require("console");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "./uploads/");
@@ -151,4 +152,34 @@ router.post("/post-vote", VerifyToken, async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.post("/post-reply-vote", VerifyToken, async (req, res) => {
+  try {
+    const FindSupport = await DiscussionReplyModel.findById(req.body.AnswerId);
+    if (FindSupport) {
+      // console.log(FindSupport);
+      await FindSupport.update({
+        $push: {
+          Votes: { vote: req.body.Vote, profileId: req.user?.profileId },
+        },
+      });
+      return res.status(200).json({ msg: "Vote Added successfully" });
+    } else {
+      return res.status(404).json({ error: "Support not found" });
+    }
+    // const DiscussionId = req.query.DiscussionId;
+    // const vote = await VotesModel.create({
+    //   DiscussionId: DiscussionId,
+    //   Vote: req.body.Vote,
+    //   profileId: req.user.profileId,
+    // });
+    // return res
+    //   .status(200)
+    //   .json({ success: true, msg: "Vote Given Successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;
