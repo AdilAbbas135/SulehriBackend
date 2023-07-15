@@ -135,17 +135,19 @@ router.post("/searchproblem", async (req, res) => {
           $or: [
             {
               Name: {
-                $regex: req.body?.Title ? req.body?.Title : "NoTitleFound",
+                $regex: req.body?.Title
+                  ? new RegExp(req.body?.Title, "i")
+                  : "NoTitleFound",
               },
             },
             {
               Location: {
                 $regex: req.body?.Location
-                  ? req.body?.Location
+                  ? new RegExp(req.body?.Location, "i")
                   : "NoTitleFound",
               },
             },
-            { Priority: req.body?.Priority },
+            { Priority: parseInt(req.body?.Priority) },
           ],
         },
       },
@@ -165,7 +167,14 @@ router.post("/searchproblem", async (req, res) => {
           as: "Votes",
         },
       },
-
+      {
+        $lookup: {
+          from: "allusers",
+          localField: "profileId",
+          foreignField: "profileId",
+          as: "UserDetails",
+        },
+      },
       { $sort: { createdAt: -1 } },
     ]);
     return res.status(200).json(problems);
