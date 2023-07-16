@@ -129,27 +129,63 @@ router.post("/searchproblem", async (req, res) => {
   // console.log("request recieved at the backend");
   try {
     console.log(req.body);
+
+    const Titlefilter = {
+      Name: {
+        $regex: req.body?.Title ? new RegExp(req.body.Title, "i") : null,
+      },
+    };
+    const Locationfilter = {
+      Location: {
+        $regex: req.body?.Location ? new RegExp(req.body.Location, "i") : null,
+      },
+    };
+    const Priorityfilter = {
+      Priority: req.body?.Priority ? parseInt(req.body?.Priority) : null,
+    };
+
+    const queryOnlyTitlefilter = {
+      $and: [Titlefilter],
+    };
+    const queryOnlyLocationfilter = {
+      $and: [Locationfilter],
+    };
+    const queryOnlyPriorityfilter = {
+      $and: [Priorityfilter],
+    };
+    const queryTitlefilterLocationfilter = {
+      $and: [Titlefilter, Locationfilter],
+    };
+    const queryTitlefilterPriorityfilter = {
+      $and: [Titlefilter, Priorityfilter],
+    };
+    const queryLocationfilterPriorityfilter = {
+      $and: [Locationfilter, Priorityfilter],
+    };
+    const queryallfilters = {
+      $and: [Titlefilter, Locationfilter, Priorityfilter],
+    };
+
+    let query;
+    if (req.body.Title && req.body.Location && req.body.Priority) {
+      query = queryallfilters;
+    } else if (req.body?.Title && req.body.Location) {
+      query = queryTitlefilterLocationfilter;
+    } else if (req.body?.Title && req.body.Priority) {
+      query = queryTitlefilterPriorityfilter;
+    } else if (req.body.Location && req.body.Priority) {
+      query = queryLocationfilterPriorityfilter;
+    } else if (req.body.Priority) {
+      query = queryOnlyPriorityfilter;
+    } else if (req.body.Location) {
+      query = queryOnlyLocationfilter;
+    } else if (req.body.Title) {
+      query = queryOnlyTitlefilter;
+    }
+
     const problems = await OfferingModel.aggregate([
       {
-        $match: {
-          $or: [
-            {
-              Name: {
-                $regex: req.body?.Title
-                  ? new RegExp(req.body?.Title, "i")
-                  : "NoTitleFound",
-              },
-            },
-            {
-              Location: {
-                $regex: req.body?.Location
-                  ? new RegExp(req.body?.Location, "i")
-                  : "NoTitleFound",
-              },
-            },
-            { Priority: parseInt(req.body?.Priority) },
-          ],
-        },
+        $match: query,
       },
       {
         $lookup: {
